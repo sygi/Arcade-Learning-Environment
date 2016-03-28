@@ -26,10 +26,11 @@
 
 #ifdef __USE_SDL
 #include "SDL.h"
+class OSystem;
 
 class DisplayScreen {
 public:
-    DisplayScreen(MediaSource* mediaSource, Sound* sound, ColourPalette &palette); 
+    DisplayScreen(MediaSource* mediaSource, Sound* sound, ColourPalette &palette, OSystem *osystem);
     virtual ~DisplayScreen();
 
     // Displays the current frame buffer from the mediasource.
@@ -50,11 +51,12 @@ protected:
 
 protected:
     // Dimensions of the SDL window (4:3 aspect ratio)
-    static const int window_height = 321;
+    static const int window_height = 321 + 30;
     static const int window_width = 428;
     // Maintains the paused/unpaused state of the game
     bool manual_control_active;
     MediaSource* media_source;
+    OSystem *osystem;
     Sound* my_sound;
     ColourPalette &colour_palette;
     int screen_height, screen_width;
@@ -68,7 +70,7 @@ protected:
 /** A dummy class that simply ignores display events. */
 class DisplayScreen {
   public:
-    DisplayScreen(MediaSource* mediaSource, Sound* sound, ColourPalette &palette) {}
+    DisplayScreen(MediaSource* mediaSource, Sound* sound, ColourPalette &palette, OSystem *osystem) {}
     void display_screen() {}
     bool manual_control_engaged() { return false; }
     Action getUserAction() { return UNDEFINED; }

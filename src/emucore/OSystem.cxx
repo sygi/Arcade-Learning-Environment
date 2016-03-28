@@ -453,7 +453,7 @@ bool OSystem::createConsole(const string& romfile)
     exit(1);
 #endif
     p_display_screen = new DisplayScreen(&myConsole->mediaSource(),
-                                         mySound, m_colour_palette); 
+                                         mySound, m_colour_palette, this);
   }
 
   return retval;

@@ -15,13 +15,16 @@
  **************************************************************************** */
 #include "display_screen.h"
 #include "SoundSDL.hxx"
+#include "../emucore/OSystem.hxx"
+#include "../emucore/m6502/src/System.hxx"
 using namespace std;
 #ifdef __USE_SDL
 DisplayScreen::DisplayScreen(MediaSource* mediaSource,
                              Sound* sound,
-                             ColourPalette &palette):
+                             ColourPalette &palette, OSystem *osystem):
         manual_control_active(false),
         media_source(mediaSource),
+        osystem(osystem),
         my_sound(sound),
         colour_palette(palette),
         delay_msec(17)
@@ -30,13 +33,13 @@ DisplayScreen::DisplayScreen(MediaSource* mediaSource,
     screen_width = media_source->width();
     assert(window_height >= screen_height);
     assert(window_width >= screen_width);
-    yratio = window_height / (float) screen_height;
+    yratio = (window_height - 30) / (float) screen_height;
     xratio = window_width / (float) screen_width;
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         fprintf(stderr, "Could not initialize SDL: %s\n", SDL_GetError());
         exit(1);
     }
-    screen = SDL_SetVideoMode(window_width, window_height, 8, SDL_HWPALETTE);
+    screen = SDL_SetVideoMode(window_width, window_height, 32, SDL_HWPALETTE);
     if (screen == NULL) {
         fprintf(stderr, "Couldn't Initialize Screen: %s\n", SDL_GetError());
         exit(1);
@@ -74,6 +77,17 @@ void DisplayScreen::display_screen() {
         rect.w = xciel;
         rect.h = yciel;
         SDL_FillRect(screen, &rect, SDL_MapRGB(screen->format, r, g, b));
+    }
+
+    const int ram_size = 128;
+    for (unsigned int i = 0; i < ram_size; i++) {
+        rect.x = i * (window_width/ram_size);
+        rect.y = window_height - 30;
+        rect.h = 30;
+        rect.w = window_width/ram_size;
+        Uint8 x = (Uint8)osystem->console().system().peek(i + 0x80);
+        SDL_FillRect(screen, &rect, SDL_MapRGB(screen->format, 0,
+              x, 0));
     }
     if (SDL_MUSTLOCK(screen)) {
       SDL_UnlockSurface(screen);
